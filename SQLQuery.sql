@@ -1,9 +1,12 @@
-SELECT *
-  FROM PortfolioProject..covid_deaths$
 
+--Showcasing the usage of SQL queries:
 
---SELECT *
---  FROM [PortfolioProject].[dbo].[covid_vaccinations$]
+	-- SELECT, FROM, WHERE, ORDER BY
+	-- CONVERT & CAST
+	-- GROUP BY, PARTITION BY
+	-- JOIN
+
+--Exploring the Datasets
 
 
 SELECT *
@@ -11,10 +14,9 @@ FROM PortfolioProject..covid_deaths$
 WHERE continent is not null
 order by 3, 4;
 
-
--- SELECT *
--- FROM `moonlit-helper-329414.Covid.vaccines`
--- order by 3, 4
+SELECT *
+FROM `moonlit-helper-329414.Covid.vaccines`
+order by 3, 4
 
 --Select Data to be used
 
@@ -40,7 +42,7 @@ WHERE location = 'Germany' AND continent is not null
 order by 1,2;
 
 
--- Countries with highest Infection rate
+-- Countries with highest Infection rate (GROUP BY, ROUND, MAX)
 
 SELECT location, population, max(total_cases) Max_Cases, ROUND(max(total_cases/population)*100,2) Cases_Percent
 FROM PortfolioProject..covid_deaths$
@@ -49,16 +51,16 @@ GROUP BY location, population
 order by 4 desc;
 
 
--- Countries with highest Death rate / Population
+-- Countries with highest Death rate / Population (CAST)
 
-SELECT location, population, max(CAST(total_deaths as INT)) Max_Deaths, ROUND(max(CAST(total_deaths as INT)/population)*100,5) Death_Percent
+SELECT location, population, max(total_cases) Max_Cases, max(CAST(total_deaths as INT)) Max_Deaths, ROUND(max(CAST(total_deaths as INT)/population)*100,5) Death_Percent
 FROM PortfolioProject..covid_deaths$
 WHERE continent is not null
 GROUP BY location, population
-order by 3 desc;
+order by 1;
 
 
--- Death by Continent (excluding incomes, EU)
+-- Death by Continent (excluding incomes, EU) (LIKE %)
 
 SELECT location, population, max(CAST(total_deaths as INT)) Max_Deaths, ROUND(max(CAST(total_deaths as INT)/population)*100,5) Death_Percent
 FROM PortfolioProject..covid_deaths$
@@ -67,10 +69,11 @@ GROUP BY location, population
 order by 2 desc;
 
 
--- Global numbers (new cases, total cases, new deaths, total deaths) using CAST & CONVERT
+-- Global numbers (new cases, total cases, new deaths, total deaths) using CAST
 
 SELECT 
     date, 
+	location,
     sum(population) World_Population, 
     sum(new_cases) New_cases, 
     sum(total_cases) Total_cases,
@@ -79,8 +82,8 @@ SELECT
     ROUND(sum(CAST(total_deaths as INT))/sum(total_cases)*100,5) Death_Percent
 FROM PortfolioProject..covid_deaths$
 WHERE continent is not null
-GROUP BY date
-order by 1 desc;
+GROUP BY location, date
+order by 2, 1;
 
 
 -- Total Popularion / Vaccinations using JOIN & CONVERT
@@ -116,7 +119,7 @@ AS
 	JOIN PortfolioProject..covid_vaccinations$ vaccines
 		ON deaths.location = vaccines.location 
 		AND deaths.date = vaccines.date
-	WHERE deaths.continent is not null AND deaths.location = 'Germany'
+	WHERE deaths.continent is not null
 	--order by 2,3 
 )
 SELECT *, (Rolling_new_vaccines/population*100) Percent_Vaccinated
@@ -159,5 +162,4 @@ FROM PortfolioProject..covid_deaths$ deaths
 JOIN PortfolioProject..covid_vaccinations$ vaccines
     ON deaths.location = vaccines.location 
     AND deaths.date = vaccines.date
-WHERE deaths.continent is not null 
---order by 2,3; 
+WHERE deaths.continent is not null; 
